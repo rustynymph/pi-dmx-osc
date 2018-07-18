@@ -15,6 +15,7 @@
 #include <stdio.h>
 #include <signal.h>
 #include <stdlib.h>
+#include <string.h>
 #include <dmx.h>                              // DMX interface library
 #include "tinyosc.h"
 
@@ -97,21 +98,23 @@ int main( int argc, char *argv[] )
           const uint64_t timetag = tosc_getTimetag(&bundle);
           tosc_message osc;
           while (tosc_getNextMessage(&bundle, &osc)) {
-            //tosc_printMessage(&osc);
+            tosc_printMessage(&osc);
           }
         } else {
           tosc_message osc;
           tosc_parseMessage(&osc, buffer, len);
-          //tosc_printMessage(&osc);
-          if (tosc_getAddress(&osc) == "/red"){
+          tosc_printMessage(&osc);
+
+          if (strncmp(tosc_getAddress(&osc), "/red", 5) == 0){
+            printf("it's red\n");
             r = 255.0;
-          } else if (tosc_getAddress(&osc) == "/green") {
+          } else if (strncmp(tosc_getAddress(&osc), "/green", 5) == 0) {
             g = 255.0;
-          } else if (tosc_getAddress(&osc) == "/blue") {
+            printf("it's green\n");
+          } else if (strncmp(tosc_getAddress(&osc), "/blue", 5) == 0) {
             b = 255.0;
-          } else {
-            continue;
-          }
+            printf("it's blue\n");
+          } 
           setDMXColor(r, g, b);
         }
       }
