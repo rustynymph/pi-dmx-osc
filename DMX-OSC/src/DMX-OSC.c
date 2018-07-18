@@ -24,8 +24,7 @@
 #define MacroChannel  1                         
 #define MacroSettings 2                         
 #define Speed         3                        
-#define MasterDim     4
-			                        // DMX channel for dimming
+#define MasterDim     4	                        // DMX channel for dimming
 #define RedChannel    5                         // DMX channel for red control
 #define GrnChannel    6                         // DMX channel for green control
 #define BluChannel    7                         // DMX channel for blue control
@@ -42,14 +41,14 @@
 
 // global variables
 static int      initDMX       ();
-static void     setDMXColor   ( double, double, double );
+static void     setDMXColor   ( int, int, int );
 static void     exitDMX       ();
 static void     sigIntHandler ( int );
 static void     getNumbers    ( int[] );
 static volatile bool keepRunning = true;
-double r = 0.0;
-double g = 0.0;
-double b = 0.0; 
+int r = 0;
+int g = 0;
+int b = 0; 
 
 // ===========================================================================
 //  main program
@@ -80,9 +79,6 @@ int main( int argc, char *argv[] )
   printf("Press Ctrl+C to stop.\n");
 
   while (keepRunning) {
-    //int a[ 3 ];
-    //getNumbers(a);
-
     fd_set readSet;
     FD_ZERO(&readSet);
     FD_SET(fd, &readSet);
@@ -103,18 +99,37 @@ int main( int argc, char *argv[] )
         } else {
           tosc_message osc;
           tosc_parseMessage(&osc, buffer, len);
-          tosc_printMessage(&osc);
 
+          /* Gets the first arg of message and casts it to an int */
+          int arg = 0;
+          switch ( osc.format[0] ) {
+            case 'f': 
+              //printf("%g \n", tosc_getNextFloat(&osc));
+              arg = tosc_getNextFloat(&osc);
+              break;
+            case 'i':
+              //printf("%i \n", tosc_getNextInt32(&osc));
+              arg = tosc_getNextInt32(&osc);
+              break;
+            case 's':
+              //printf("%s \n", tosc_getNextString(&osc));
+              arg = atoi(tosc_getNextString(&osc));
+              break;
+            default: continue;
+          }  
+
+          /* Checks the address and assigns the value of the arg to the corresponding color value */
+          //tosc_printMessage(&osc); // uncommenting this messes up with the "nextInt" stuff
           if (strncmp(tosc_getAddress(&osc), "/red", 5) == 0){
-            printf("it's red\n");
-            r = 255.0;
+            //printf("it's red\n");
+            r = arg;     
           } else if (strncmp(tosc_getAddress(&osc), "/green", 5) == 0) {
-            g = 255.0;
-            printf("it's green\n");
+            //printf("it's green\n");
+            g = arg;     
           } else if (strncmp(tosc_getAddress(&osc), "/blue", 5) == 0) {
-            b = 255.0;
-            printf("it's blue\n");
-          } 
+            //printf("it's blue\n");
+            b = arg;     
+          }  
           setDMXColor(r, g, b);
         }
       }
@@ -124,8 +139,7 @@ int main( int argc, char *argv[] )
   close(fd);
   exitDMX();
 
-  return ( 0 );
-
+  return (0);
 }
 
 // ===========================================================================
@@ -134,65 +148,50 @@ int main( int argc, char *argv[] )
 
 int initDMX()
 {
-
   // open DMX interface
 
   int success = dmxOpen();
   if ( success < 0 ) return ( success );
 
-
   // configure
 
   dmxSetMaxChannels ( NumChannels );
 
-
-  //setDMXColor(1.0, 0.0, 1.0);
-
   // return valid status
 
   return ( 0 );
-
-
 }
 
 // ===========================================================================
 // setDMXColor -- set the color values for the DMX device
 // ===========================================================================
-
-void setDMXColor ( double red, double green, double blue )
+void setDMXColor ( int red, int green, int blue )
 {
 
-  // convert values to unsigned bytes
-
-  //ubyte redVal = (ubyte) ( 255.0f * red );
-  //ubyte grnVal = (ubyte) ( 255.0f * grn );
-  //ubyte bluVal = (ubyte) ( 255.0f * blu );
+  ubyte redVal = (ubyte) red;
+  ubyte greenVal = (ubyte) green;
+  ubyte blueVal = (ubyte) blue;
 
   dmxSetValue ( MasterDim , 150 );
   //dmxSetValue ( light2strobe , 255 );
 
   // set the channel colors
-
-  dmxSetValue ( RedChannel , red );
-  dmxSetValue ( GrnChannel , green );
-  dmxSetValue ( BluChannel , blue );
+  dmxSetValue ( RedChannel , redVal );
+  dmxSetValue ( GrnChannel , greenVal );
+  dmxSetValue ( BluChannel , blueVal );
 
   //dmxSetValue ( light2reserved , 0 );
   //dmxSetValue ( light2strobe , 255 );
-  // dmxSetValue ( light2red , redVal );
+  //dmxSetValue ( light2red , redVal );
   //dmxSetValue ( light2green , grnVal );
   //dmxSetValue ( light2blue, bluVal );
-
 }
-
 
 // ===========================================================================
 // exitDMX -- terminate the DMX interface
 // ===========================================================================
-
 void exitDMX()
 {
-
  // blackout
   for (int i = 1; i <= NumChannels; i = i + 1){
     dmxSetValue ( i , 0 );
@@ -200,28 +199,10 @@ void exitDMX()
 
   // close the DMX connection
   dmxClose();
-
 }
 
-void sigIntHandler(int sigint){
+void sigIntHandler(int sigint)
+{
   exitDMX();
   keepRunning = false;
-}
-
-
-void getNumbers( int [] )
-{
-  int b[ 3 ];
-  int number = 0;
-     
-  printf( "Please enter your list of 3 numbers: " );
- 
-  for ( int i = 0 ; i < 3; i++ ) {
-    scanf( "%d", &number );
-    b[ i ] = number;
-  }
- 
-  setDMXColor(b[0], b[1], b[2]);
-
-  
 }
