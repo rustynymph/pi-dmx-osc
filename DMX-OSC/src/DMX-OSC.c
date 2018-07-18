@@ -99,9 +99,11 @@ int main( int argc, char *argv[] )
         } else {
           tosc_message osc;
           tosc_parseMessage(&osc, buffer, len);
-
+          //printf("%d \n", sizeof(osc.format));
+          //tosc_printMessage(&osc);
           /* Gets the first arg of message and casts it to an int */
           int arg = 0;
+          /*
           switch ( osc.format[0] ) {
             case 'f': 
               //printf("%g \n", tosc_getNextFloat(&osc));
@@ -116,11 +118,19 @@ int main( int argc, char *argv[] )
               arg = atoi(tosc_getNextString(&osc));
               break;
             default: continue;
-          }  
+          }  */
+
+         int redarg = tosc_getNextInt32(&osc);
+         int greenarg = tosc_getNextInt32(&osc);
+         int bluearg  = tosc_getNextInt32(&osc);
+
+         //int redarg = atoi(tosc_getNextString(&osc));
+         //int greenarg = atoi(tosc_getNextString(&osc));
+         //int bluearg  = atoi(tosc_getNextString(&osc));
 
           /* Checks the address and assigns the value of the arg to the corresponding color value */
           //tosc_printMessage(&osc); // uncommenting this messes up with the "nextInt" stuff
-          if (strncmp(tosc_getAddress(&osc), "/red", 5) == 0){
+          /*if (strncmp(tosc_getAddress(&osc), "/red", 5) == 0){
             //printf("it's red\n");
             r = arg;     
           } else if (strncmp(tosc_getAddress(&osc), "/green", 5) == 0) {
@@ -130,7 +140,8 @@ int main( int argc, char *argv[] )
             //printf("it's blue\n");
             b = arg;     
           }  
-          setDMXColor(r, g, b);
+          setDMXColor(r, g, b);*/
+         setDMXColor(redarg, greenarg, bluearg);
         }
       }
     }
