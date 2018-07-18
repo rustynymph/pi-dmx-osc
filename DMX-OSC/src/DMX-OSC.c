@@ -99,7 +99,7 @@ int main( int argc, char *argv[] )
         } else {
           tosc_message osc;
           tosc_parseMessage(&osc, buffer, len);
-
+          printf("%d \n", sizeof(osc.format))
           /* Gets the first arg of message and casts it to an int */
           int arg = 0;
           switch ( osc.format[0] ) {
