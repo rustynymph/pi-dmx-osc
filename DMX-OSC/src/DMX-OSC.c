@@ -99,9 +99,9 @@ int main( int argc, char *argv[] )
         } else {
           tosc_message osc;
           tosc_parseMessage(&osc, buffer, len);
-          printf("%d \n", sizeof(osc.format))
-          /* Gets the first arg of message and casts it to an int */
-          int arg = 0;
+          //tosc_printMessage(&osc); // uncommenting this messes up with the "nextInt" stuff
+
+          /*
           switch ( osc.format[0] ) {
             case 'f': 
               //printf("%g \n", tosc_getNextFloat(&osc));
@@ -116,21 +116,17 @@ int main( int argc, char *argv[] )
               arg = atoi(tosc_getNextString(&osc));
               break;
             default: continue;
-          }  
+          }  */
 
-          /* Checks the address and assigns the value of the arg to the corresponding color value */
-          //tosc_printMessage(&osc); // uncommenting this messes up with the "nextInt" stuff
-          if (strncmp(tosc_getAddress(&osc), "/red", 5) == 0){
-            //printf("it's red\n");
-            r = arg;     
-          } else if (strncmp(tosc_getAddress(&osc), "/green", 5) == 0) {
-            //printf("it's green\n");
-            g = arg;     
-          } else if (strncmp(tosc_getAddress(&osc), "/blue", 5) == 0) {
-            //printf("it's blue\n");
-            b = arg;     
-          }  
-          setDMXColor(r, g, b);
+         int redarg = tosc_getNextInt32(&osc);
+         int greenarg = tosc_getNextInt32(&osc);
+         int bluearg  = tosc_getNextInt32(&osc);
+
+          /* How to check OSC address */
+          /*if (strncmp(tosc_getAddress(&osc), "/lights", 6) == 0){
+            // do thing
+          } */
+         setDMXColor(redarg, greenarg, bluearg);
         }
       }
     }
